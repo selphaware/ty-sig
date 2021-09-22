@@ -1,18 +1,43 @@
-from typing import Union, Optional, _GenericAlias
+"""
+    (c) 2021 Usman Ahmad https://github.com/selphaware
+
+    tysig.py
+
+    Type Safe checker and signature decorator for type checking and
+    typing type checking e.g. Union, Optional, Literal, Any, AnyStr,
+    Tuple, Dict, List, TypeVar
+"""
+
+
+from typing import Union, Optional, TypeVar, _GenericAlias, \
+    _SpecialForm, _VariadicGenericAlias, Callable
 from functools import wraps
 
 
 class TySig(object):
 
     @staticmethod
-    def is_type(var, check_type) -> bool:
+    def is_type(
+            var: object,
+            check_type: Union[
+                type, TypeVar, _GenericAlias,
+                _SpecialForm, _VariadicGenericAlias
+            ]
+    ) -> bool:
+        """
+        recursively checks if var is of type check_type
+
+        :param var: variable to check type
+        :param check_type: type to check against
+        :return: True if var is of type check_type, else False
+        """
         try:
             return isinstance(var, check_type)
         except TypeError as err:
             print(err)
             pass
         type_dict = check_type.__dict__
-        if len(type_dict) == 0:  # Any type
+        if len(type_dict) == 0:  # Any, AnyStr, Literal type
             return True
         else:
             type_args = type_dict['__args__']
@@ -40,8 +65,19 @@ class TySig(object):
             return correct_type
 
     @staticmethod
-    def signature(classobj=False, **in_vars_types):
-        def inner(fun):
+    def signature(classobj: bool = False, **in_vars_types):
+        """
+        signature decorator applied to functions to hard check the types
+        of the arguments including typing types. Also applies default values,
+        and raises exceptions on failing type checks. Uses is_type function.
+
+        :param classobj: set to True if within a class (self object)
+        :param in_vars_types: arguments with their types and/or default values
+                              e.g. @signature(a=int, b=Union[float, str],
+                                              c=List[Dict[str, Tuple[str, int]]]
+        :return: applies signature checks and applies default values
+        """
+        def inner(fun: Callable):
             @wraps(fun)
             def sub(*_in_args, **in_kwargs):
                 in_args = _in_args[1:] if classobj else _in_args
