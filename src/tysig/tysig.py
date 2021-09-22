@@ -8,13 +8,22 @@
     Tuple, Dict, List, TypeVar
 """
 
-
 from typing import Union, Optional, TypeVar, _GenericAlias, \
     _SpecialForm, _VariadicGenericAlias, Callable
 from functools import wraps
 
 
 class TySig(object):
+
+    @staticmethod
+    def getattr_name(invar) -> Optional[str]:
+        try:
+            return invar.__getattribute__('_name')
+        except AttributeError:
+            try:
+                return invar.__getattribute__('__name__')
+            except AttributeError:
+                return None
 
     @staticmethod
     def is_type(
@@ -36,8 +45,15 @@ class TySig(object):
         except TypeError:
             pass
         type_dict = check_type.__dict__
-        if len(type_dict) == 0:  # Any, AnyStr, Literal type
-            return True
+        if len(type_dict) == 0:
+            attr = TySig.getattr_name(check_type)
+            if attr == "Any":
+                return True
+            elif attr == "AnyStr":
+                return isinstance(var, str) or isinstance(var, bytearray) \
+                       or isinstance(var, bytes)
+            else:  # None or otherwise
+                return False
         else:
             type_args = type_dict['__args__']
             type_origin = type_dict['__origin__']
@@ -49,8 +65,11 @@ class TySig(object):
                 correct_type = all(TySig.is_type(x, type_args[0]) for x in var)
 
             elif (type_origin is tuple) and (isinstance(var, tuple)):
-                correct_type = all(TySig.is_type(x, type_args[i])
-                                   for i, x in enumerate(var))
+                if len(var) == len(type_args):
+                    correct_type = all(TySig.is_type(x, type_args[i])
+                                       for i, x in enumerate(var))
+                else:
+                    correct_type = False
 
             elif (type_origin is dict) and (isinstance(var, dict)):
                 correct_keys = all(TySig.is_type(x, type_args[0])
@@ -76,6 +95,7 @@ class TySig(object):
                                               c=List[Dict[str, Tuple[str, int]]]
         :return: applies signature checks and applies default values
         """
+
         def inner(fun: Callable):
             @wraps(fun)
             def sub(*_in_args, **in_kwargs):
@@ -113,13 +133,19 @@ class TySig(object):
                 for kw_name, kw_val in _kwargs.items():
                     vdeftype = vars_types.get(kw_name)
                     if vdeftype is None:
-                        raise TypeError(f"Unexpected variable found: '{kw_name}'")
+                        raise TypeError(
+                            f"Unexpected variable found: '{kw_name}'")
 
                     _, vtype = get_def_type(vdeftype)
                     if not istype(kw_val, vtype):
-                        raise TypeError(f"'{kw_name}' parameter has value of "
+                        raise TypeError(f"KWARGS: '{kw_name}' parameter "
+                                        "has value of "
                                         f"type '{type(kw_val)}', but "
-                                        f"expecting type '{vtype}'")
+                                        f"expecting type '{vtype}'. "
+                                        "If you're "
+                                        "using GenericAlias types then"
+                                        " please check the sub "
+                                        "argument types are correct")
                     kwargs.pop(kw_name)
                     vars_types.pop(kw_name)
 
@@ -131,7 +157,7 @@ class TySig(object):
                     for idx, arg in enumerate(args):
                         if not istype(arg, vtype):
                             if vdef is None:
-                                raise TypeError(f"'{vname}' type should be "
+                                raise TypeError(f"ARGS: '{vname}' type should be "
                                                 f"'{vtype}' instead found "
                                                 f"'{type(arg)}'. If you're "
                                                 "using GenericAlias types then"
@@ -162,5 +188,7 @@ class TySig(object):
                     return fun(_in_args[0], **kwargs)
                 else:  # otherwise: run function normally passing through all set args
                     return fun(**kwargs)
+
             return sub
+
         return inner

@@ -1,6 +1,6 @@
 import unittest
 from tysig.tysig import TySig
-from typing import Union, Tuple, List, Optional, Dict, Any
+from typing import Union, Tuple, List, Optional, Dict, Any, AnyStr
 from datetime import datetime
 
 
@@ -68,6 +68,17 @@ def print_check(var, ntype, check):
     print("\n", "-" * 30)
     print(f"CHECK: {var} is {ntype} ? --> ", check)
     print("-" * 30)
+
+
+@TySig.signature(
+    var1=Tuple[str, Any, Any],
+    var2=Tuple[AnyStr, AnyStr, str],
+    var3=Tuple[Any, AnyStr, Any]
+)
+def fn6(*args, **kwargs):
+    print(args)
+    print(kwargs)
+    return args, kwargs
 
 
 class TestTySig(unittest.TestCase):
@@ -209,7 +220,7 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        self.assertEqual("'d' type should be 'typing.Tuple[str, "
+        self.assertEqual("ARGS: 'd' type should be 'typing.Tuple[str, "
                          "typing.List[int]]' instead found '<class 'tuple'>'"
                          ". If you're using GenericAlias types then please "
                          "check the sub argument types are correct", err)
@@ -292,10 +303,12 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        exp_error = "'history' parameter has value of type '<class 'dict'>', "\
-                    "but expecting type 'typing.Dict[str, typing.Tuple[typing."\
-                    "List[typing.Dict[int, typing.List[typing.Union[str, fl"\
-                    "oat]]]], float, typing.Union[int, NoneType]]]'"
+        exp_error = "KWARGS: 'history' parameter has value of type '<class 'dict'>', " \
+                    "but expecting type 'typing.Dict[str, typing.Tuple[typing." \
+                    "List[typing.Dict[int, typing.List[typing.Union[str, fl" \
+                    "oat]]]], float, typing.Union[int, NoneType]]]'. If you're"\
+                    " using GenericAlias types then please check the "\
+                    "sub argument types are correct"
         self.assertEqual(exp_error, err)
 
     def test_sig5(self):
@@ -327,9 +340,9 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        exp_error = "'dob' type should be 'typing.Union[typing.Tuple[int, int,"\
-                    " int], str]' instead found '<class 'tuple'>'. If you're"\
-                    " using GenericAlias types then please check the sub "\
+        exp_error = "ARGS: 'dob' type should be 'typing.Union[typing.Tuple[int, int," \
+                    " int], str]' instead found '<class 'tuple'>'. If you're" \
+                    " using GenericAlias types then please check the sub " \
                     "argument types are correct"
         self.assertEqual(exp_error, err)
 
@@ -370,8 +383,48 @@ class TestTySig(unittest.TestCase):
             err = str(exp)
             print(err)
         self.assertEqual(
-            "'var2' type should be 'typing.Tuple[typing.Any, typing.Any, "
+            "ARGS: 'var2' type should be 'typing.Tuple[typing.Any, typing.Any, "
             "str]' instead found '<class 'tuple'>'. If you're using GenericA"
             "lias types then please check the sub argument types are correct",
+            err
+        )
+
+    def test_sig11(self):
+        # var1 = Tuple[str, Any, Any],
+        # var2 = Tuple[AnyStr, AnyStr, str],
+        # var3 = Tuple[Any, AnyStr, Any]
+        res = fn6(("2", b"3", "5"), ("hello", b"5.6", "sd"), var1=("j", 6, "k"))
+        self.assertEqual(
+            ((), {'var1': ('j', 6, 'k'),
+                  'var2': ('2', b'3', '5'),
+                  'var3': ('hello', b'5.6', 'sd')}), res)
+
+    def test_sig12(self):
+        err = ""
+        try:
+            _ = fn6(("2", b"3", "5"), (2, 5.6, "sd"), var1=("j", 6, "k"))
+        except TypeError as exp:
+            err = str(exp)
+            print(err)
+        self.assertEqual(
+            "ARGS: 'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, "
+            "typing.Any]' instead found '<class 'tuple'>'. If you're using "
+            "GenericAlias types then please check the sub argument types "
+            "are correct",
+            err
+        )
+
+    def test_sig13(self):
+        err = ""
+        try:
+            _ = fn6(("2", b"3", "5"), (2, b"5.6", "sd"), var1=(6, "k"))
+        except TypeError as exp:
+            err = str(exp)
+            print(err)
+        self.assertEqual(
+            "KWARGS: 'var1' parameter has value of type '<class 'tuple'>', "
+            "but expecting type 'typing.Tuple[str, typing.Any, typing.Any]'. If "
+            "you're using GenericAlias types then please check the sub "
+            "argument types are correct",
             err
         )
