@@ -5,10 +5,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="ty-sig",
-    version="0.0.1",
+    version="0.0.2",
     author="Usman Ahmad",
     author_email="uahmad3013@outlook.com",
-    description="Type Safe checker and signature decorator",
+    description="Type safe checker and signature decorator",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/selphaware/ty-sig",
