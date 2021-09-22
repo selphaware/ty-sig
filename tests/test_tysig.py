@@ -220,10 +220,11 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        self.assertEqual("ARGS: 'd' type should be 'typing.Tuple[str, "
-                         "typing.List[int]]' instead found '<class 'tuple'>'"
-                         ". If you're using GenericAlias types then please "
-                         "check the sub argument types are correct", err)
+        self.assertEqual("'d' type should be 'typing.Tuple[str, typing."
+                         "List[int]]' instead found '<class 'tuple'>'. "
+                         "If you're using GenericAlias, VariadicGenericAlias, "
+                         "or SpecialForm types then please check the sub "
+                         "argument types are correct", err)
 
     def test_sig3(self):
         res = fn2(
@@ -303,12 +304,13 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        exp_error = "KWARGS: 'history' parameter has value of type '<class 'dict'>', " \
-                    "but expecting type 'typing.Dict[str, typing.Tuple[typing." \
-                    "List[typing.Dict[int, typing.List[typing.Union[str, fl" \
-                    "oat]]]], float, typing.Union[int, NoneType]]]'. If you're"\
-                    " using GenericAlias types then please check the "\
-                    "sub argument types are correct"
+        exp_error = "'history' type should be 'typing.Dict[str, typing."\
+                    "Tuple[typing.List[typing.Dict[int, typing.List[typing."\
+                    "Union[str, float]]]], float, typing.Union[int, "\
+                    "NoneType]]]' instead found '<class 'dict'>'. If "\
+                    "you're using GenericAlias, VariadicGenericAlias, "\
+                    "or SpecialForm types then please check the sub "\
+                    "argument types are correct"
         self.assertEqual(exp_error, err)
 
     def test_sig5(self):
@@ -340,10 +342,11 @@ class TestTySig(unittest.TestCase):
             print(exp)
             err = str(exp)
             pass
-        exp_error = "ARGS: 'dob' type should be 'typing.Union[typing.Tuple[int, int," \
-                    " int], str]' instead found '<class 'tuple'>'. If you're" \
-                    " using GenericAlias types then please check the sub " \
-                    "argument types are correct"
+        exp_error = "'dob' type should be 'typing.Union[typing.Tuple["\
+                    "int, int, int], str]' instead found '<class 'tuple'>'"\
+                    ". If you're using GenericAlias, VariadicGenericAlias, "\
+                    "or SpecialForm types then please check the sub argument"\
+                    " types are correct"
         self.assertEqual(exp_error, err)
 
     def test_sig6(self):
@@ -383,9 +386,10 @@ class TestTySig(unittest.TestCase):
             err = str(exp)
             print(err)
         self.assertEqual(
-            "ARGS: 'var2' type should be 'typing.Tuple[typing.Any, typing.Any, "
-            "str]' instead found '<class 'tuple'>'. If you're using GenericA"
-            "lias types then please check the sub argument types are correct",
+            "'var2' type should be 'typing.Tuple[typing.Any, typing.Any, str]'"
+            " instead found '<class 'tuple'>'. If you're using GenericAlias, "
+            "VariadicGenericAlias, or SpecialForm types then please check the"
+            " sub argument types are correct",
             err
         )
 
@@ -407,10 +411,10 @@ class TestTySig(unittest.TestCase):
             err = str(exp)
             print(err)
         self.assertEqual(
-            "ARGS: 'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, "
+            "'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, "
             "typing.Any]' instead found '<class 'tuple'>'. If you're using "
-            "GenericAlias types then please check the sub argument types "
-            "are correct",
+            "GenericAlias, VariadicGenericAlias, or SpecialForm types then "
+            "please check the sub argument types are correct",
             err
         )
 
@@ -422,9 +426,9 @@ class TestTySig(unittest.TestCase):
             err = str(exp)
             print(err)
         self.assertEqual(
-            "KWARGS: 'var1' parameter has value of type '<class 'tuple'>', "
-            "but expecting type 'typing.Tuple[str, typing.Any, typing.Any]'. If "
-            "you're using GenericAlias types then please check the sub "
-            "argument types are correct",
+            "'var1' type should be 'typing.Tuple[str, typing.Any, "
+            "typing.Any]' instead found '<class 'tuple'>'. If you're "
+            "using GenericAlias, VariadicGenericAlias, or SpecialForm types "
+            "then please check the sub argument types are correct",
             err
         )

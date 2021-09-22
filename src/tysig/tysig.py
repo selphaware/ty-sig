@@ -11,6 +11,7 @@
 from typing import Union, Optional, TypeVar, _GenericAlias, \
     _SpecialForm, _VariadicGenericAlias, Callable
 from functools import wraps
+from tysig.tyerrors import DEFAULT_ERROR, SIG_TYPE_ERROR, ARGS_ERROR, UNEXP_ERROR
 
 
 class TySig(object):
@@ -83,6 +84,13 @@ class TySig(object):
             return correct_type
 
     @staticmethod
+    def is_typing_type(vtype):
+        return isinstance(vtype, type) or \
+               isinstance(vtype, _GenericAlias) or \
+               isinstance(vtype, _VariadicGenericAlias) or \
+               isinstance(vtype, _SpecialForm)
+
+    @staticmethod
     def signature(classobj: bool = False, **in_vars_types):
         """
         signature decorator applied to functions to hard check the types
@@ -111,21 +119,19 @@ class TySig(object):
                     if isinstance(vdeftype, tuple):
                         vdef, vtype = vdeftype
                         if not istype(*vdeftype):
-                            raise TypeError(f"'{vname}' default value is of "
-                                            f"type '{type(vdef)}', but "
-                                            f"expecting type '{vtype}'")
+                            raise TypeError(
+                                DEFAULT_ERROR.format(vname, type(vdef), vtype)
+                            )
                         else:
                             defmap[vname] = vdef
 
                 def get_def_type(in_vdeftype) -> tuple:
-                    if isinstance(in_vdeftype, type) or (
-                            isinstance(in_vdeftype, _GenericAlias)):
+                    if TySig.is_typing_type(in_vdeftype):
                         in_vdef, in_vtype = None, in_vdeftype
                     elif isinstance(in_vdeftype, tuple):
                         in_vdef, in_vtype = in_vdeftype
                     else:
-                        raise TypeError("Expected type or tuple in signature "
-                                        f"instead found '{type(in_vdeftype)}'")
+                        raise TypeError(SIG_TYPE_ERROR.format(type(in_vdeftype)))
                     return in_vdef, in_vtype
 
                 # check kwargs
@@ -138,14 +144,8 @@ class TySig(object):
 
                     _, vtype = get_def_type(vdeftype)
                     if not istype(kw_val, vtype):
-                        raise TypeError(f"KWARGS: '{kw_name}' parameter "
-                                        "has value of "
-                                        f"type '{type(kw_val)}', but "
-                                        f"expecting type '{vtype}'. "
-                                        "If you're "
-                                        "using GenericAlias types then"
-                                        " please check the sub "
-                                        "argument types are correct")
+                        raise TypeError(ARGS_ERROR.format(kw_name, vtype,
+                                                          type(kw_val)))
                     kwargs.pop(kw_name)
                     vars_types.pop(kw_name)
 
@@ -157,12 +157,8 @@ class TySig(object):
                     for idx, arg in enumerate(args):
                         if not istype(arg, vtype):
                             if vdef is None:
-                                raise TypeError(f"ARGS: '{vname}' type should be "
-                                                f"'{vtype}' instead found "
-                                                f"'{type(arg)}'. If you're "
-                                                "using GenericAlias types then"
-                                                " please check the sub "
-                                                "argument types are correct")
+                                raise TypeError(
+                                    ARGS_ERROR.format(vname, vtype, type(arg)))
                             else:
                                 kwargs[vname] = vdef
                                 break
@@ -181,7 +177,7 @@ class TySig(object):
 
                 # final check to see if there are any remaining args
                 if len(args) > 0:
-                    raise TypeError(f"Found unexpected extra arguments: {args}")
+                    raise TypeError(UNEXP_ERROR.format(args))
 
                 # if running in a class then pass through self class object
                 if classobj:
