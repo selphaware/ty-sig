@@ -33,8 +33,7 @@ class TySig(object):
         """
         try:
             return isinstance(var, check_type)
-        except TypeError as err:
-            print(err)
+        except TypeError:
             pass
         type_dict = check_type.__dict__
         if len(type_dict) == 0:  # Any, AnyStr, Literal type
