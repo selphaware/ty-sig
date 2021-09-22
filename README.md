@@ -35,6 +35,8 @@ help(TySig)
      |      :param check_type: type to check against
      |      :return: True if var is of type check_type, else False
      |  
+     |  is_typing_type(vtype)
+     |  
      |  signature(classobj: bool = False, **in_vars_types)
      |      signature decorator applied to functions to hard check the types
      |      of the arguments including typing types. Also applies default values,
@@ -329,7 +331,7 @@ except TypeError as exp:
     print(exp)
 ```
 
-    ARGS: 'd' type should be 'typing.Tuple[str, typing.List[int]]' instead found '<class 'tuple'>'. If you're using GenericAlias types then please check the sub argument types are correct
+    'd' type should be 'typing.Tuple[str, typing.List[int]]' instead found '<class 'tuple'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
     
 
 
@@ -408,7 +410,7 @@ except TypeError as exp:
     print(exp)
 ```
 
-    KWARGS: 'history' parameter has value of type '<class 'dict'>', but expecting type 'typing.Dict[str, typing.Tuple[typing.List[typing.Dict[int, typing.List[typing.Union[str, float]]]], float, typing.Union[int, NoneType]]]'. If you're using GenericAlias types then please check the sub argument types are correct
+    'history' type should be 'typing.Dict[str, typing.Tuple[typing.List[typing.Dict[int, typing.List[typing.Union[str, float]]]], float, typing.Union[int, NoneType]]]' instead found '<class 'dict'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
     
 
 
@@ -441,7 +443,7 @@ except TypeError as exp:
     print(exp)
 ```
 
-    ARGS: 'dob' type should be 'typing.Union[typing.Tuple[int, int, int], str]' instead found '<class 'tuple'>'. If you're using GenericAlias types then please check the sub argument types are correct
+    'dob' type should be 'typing.Union[typing.Tuple[int, int, int], str]' instead found '<class 'tuple'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
     
 
 
@@ -536,7 +538,7 @@ except TypeError as exp:
     print(exp)
 ```
 
-    ARGS: 'var2' type should be 'typing.Tuple[~AnyStr, typing.Any, str]' instead found '<class 'tuple'>'. If you're using GenericAlias types then please check the sub argument types are correct
+    'var2' type should be 'typing.Tuple[~AnyStr, typing.Any, str]' instead found '<class 'tuple'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
     
 
 
@@ -548,5 +550,5 @@ except TypeError as exp:
     print(exp)
 ```
 
-    ARGS: 'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, typing.Any]' instead found '<class 'tuple'>'. If you're using GenericAlias types then please check the sub argument types are correct
+    'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, typing.Any]' instead found '<class 'tuple'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
     
