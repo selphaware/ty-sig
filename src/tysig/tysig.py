@@ -11,13 +11,20 @@
 from typing import Union, Optional, TypeVar, _GenericAlias, \
     _SpecialForm, _VariadicGenericAlias, Callable
 from functools import wraps
-from tysig.tyerrors import DEFAULT_ERROR, SIG_TYPE_ERROR, ARGS_ERROR, UNEXP_ERROR
+from tysig.tyerrors import DEFAULT_ERROR, SIG_TYPE_ERROR, ARGS_ERROR, \
+    UNEXP_ERROR
 
 
 class TySig(object):
 
     @staticmethod
     def getattr_name(invar) -> Optional[str]:
+        """
+        gets name of input object
+
+        :param invar: object we are checking name of
+        :return: name if exists otherwise None
+        """
         try:
             return invar.__getattribute__('_name')
         except AttributeError:
@@ -85,10 +92,17 @@ class TySig(object):
 
     @staticmethod
     def is_typing_type(vtype):
-        return isinstance(vtype, type) or \
-               isinstance(vtype, _GenericAlias) or \
-               isinstance(vtype, _VariadicGenericAlias) or \
-               isinstance(vtype, _SpecialForm)
+        """
+        check if type vtype is a typing type of either:
+        _GenericAlias, _VariadicGenericAlias, or _SpecialForm
+
+        :param vtype: we are checking the type of this type
+        :return: True if is a typing type, else False
+        """
+        ret = isinstance(vtype, type) or isinstance(vtype, _GenericAlias)
+        ret = ret or isinstance(vtype, _VariadicGenericAlias)
+        ret = ret or isinstance(vtype, _SpecialForm)
+        return ret
 
     @staticmethod
     def signature(classobj: bool = False, **in_vars_types):
@@ -131,7 +145,8 @@ class TySig(object):
                     elif isinstance(in_vdeftype, tuple):
                         in_vdef, in_vtype = in_vdeftype
                     else:
-                        raise TypeError(SIG_TYPE_ERROR.format(type(in_vdeftype)))
+                        raise TypeError(
+                            SIG_TYPE_ERROR.format(type(in_vdeftype)))
                     return in_vdef, in_vtype
 
                 # check kwargs

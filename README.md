@@ -27,6 +27,10 @@ help(TySig)
      |  Static methods defined here:
      |  
      |  getattr_name(invar) -> Union[str, NoneType]
+     |      gets name of input object
+     |      
+     |      :param invar: object we are checking name of
+     |      :return: name if exists otherwise None
      |  
      |  is_type(var: object, check_type: Union[type, TypeVar, _GenericAlias, _SpecialForm, _VariadicGenericAlias]) -> bool
      |      recursively checks if var is of type check_type
@@ -36,6 +40,11 @@ help(TySig)
      |      :return: True if var is of type check_type, else False
      |  
      |  is_typing_type(vtype)
+     |      check if type vtype is a typing type of either:
+     |      _GenericAlias, _VariadicGenericAlias, or _SpecialForm
+     |      
+     |      :param vtype: we are checking the type of this type
+     |      :return: True if is a typing type, else False
      |  
      |  signature(classobj: bool = False, **in_vars_types)
      |      signature decorator applied to functions to hard check the types
