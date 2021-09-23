@@ -8,8 +8,8 @@
     Tuple, Dict, List, TypeVar
 """
 
-from typing import Union, Optional, TypeVar, _GenericAlias, \
-    _SpecialForm, _VariadicGenericAlias, Callable
+from typing import Union, Optional, Callable
+import typing
 from functools import wraps
 from tysig.tyerrors import DEFAULT_ERROR, SIG_TYPE_ERROR, ARGS_ERROR, \
     UNEXP_ERROR
@@ -25,21 +25,27 @@ class TySig(object):
         :param invar: object we are checking name of
         :return: name if exists otherwise None
         """
+        ftype = None
         try:
-            return invar.__getattribute__('_name')
-        except AttributeError:
+            ftype = invar.__getattribute__('_name')
+        except (AttributeError, TypeError):
             try:
-                return invar.__getattribute__('__name__')
-            except AttributeError:
-                return None
+                ftype = invar.__getattribute__('__name__')
+            except (AttributeError, TypeError):
+                pass
+        if ftype is None:
+            try:
+                ftype = str(invar.__getattribute__('__origin__'))
+                if "typing." in ftype:
+                    ftype = ftype.split('.')[1]
+            except (AttributeError, TypeError):
+                pass
+        return ftype
 
     @staticmethod
     def is_type(
             var: object,
-            check_type: Union[
-                type, TypeVar, _GenericAlias,
-                _SpecialForm, _VariadicGenericAlias
-            ]
+            check_type
     ) -> bool:
         """
         recursively checks if var is of type check_type
@@ -99,10 +105,9 @@ class TySig(object):
         :param vtype: we are checking the type of this type
         :return: True if is a typing type, else False
         """
-        ret = isinstance(vtype, type) or isinstance(vtype, _GenericAlias)
-        ret = ret or isinstance(vtype, _VariadicGenericAlias)
-        ret = ret or isinstance(vtype, _SpecialForm)
-        return ret
+        type_name = TySig.getattr_name(vtype)
+        typing_types = [x for x in typing.__dict__['__all__'] if x[0].isupper()]
+        return type_name in typing_types
 
     @staticmethod
     def signature(classobj: bool = False, **in_vars_types):
@@ -140,7 +145,7 @@ class TySig(object):
                             defmap[vname] = vdef
 
                 def get_def_type(in_vdeftype) -> tuple:
-                    if TySig.is_typing_type(in_vdeftype):
+                    if TySig.is_typing_type(in_vdeftype) or isinstance(in_vdeftype, type):
                         in_vdef, in_vtype = None, in_vdeftype
                     elif isinstance(in_vdeftype, tuple):
                         in_vdef, in_vtype = in_vdeftype
@@ -157,6 +162,7 @@ class TySig(object):
                         raise TypeError(
                             f"Unexpected variable found: '{kw_name}'")
 
+                    # we don't care about default values here (handled above)
                     _, vtype = get_def_type(vdeftype)
                     if not istype(kw_val, vtype):
                         raise TypeError(ARGS_ERROR.format(kw_name, vtype,
