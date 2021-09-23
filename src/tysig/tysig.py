@@ -164,6 +164,7 @@ class TySig(object):
                             f"Unexpected variable found: '{kw_name}'")
 
                     # we don't care about default values here (handled below)
+                    # we are checking if kwarg types are correct
                     _, vtype = get_def_type(vdeftype)
                     if not istype(kw_val, vtype):
                         raise TypeError(ARGS_ERROR.format(kw_name, vtype,
