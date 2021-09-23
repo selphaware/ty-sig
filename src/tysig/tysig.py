@@ -131,6 +131,7 @@ class TySig(object):
                 vars_types = in_vars_types.copy()
                 kwargs = in_kwargs.copy()
                 args = [x for x in in_args]
+                _NONE = "__NONE__"
 
                 # check default arguments which are of type tuple e.g. (2, int)
                 defmap = dict()
@@ -147,7 +148,7 @@ class TySig(object):
                 def get_def_type(in_vdeftype) -> tuple:
                     if TySig.is_typing_type(in_vdeftype) or \
                             isinstance(in_vdeftype, type):
-                        in_vdef, in_vtype = "__NONE__", in_vdeftype
+                        in_vdef, in_vtype = _NONE, in_vdeftype
                     elif isinstance(in_vdeftype, tuple):
                         in_vdef, in_vtype = in_vdeftype
                     else:
@@ -179,7 +180,7 @@ class TySig(object):
                     idx = -1
                     for idx, arg in enumerate(args):
                         if not istype(arg, vtype):
-                            if vdef == "__NONE__":
+                            if vdef == _NONE:
                                 raise TypeError(
                                     ARGS_ERROR.format(vname, vtype, type(arg)))
                             else:
