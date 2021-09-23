@@ -432,3 +432,143 @@ class TestTySig(unittest.TestCase):
             "then please check the sub argument types are correct",
             err
         )
+
+    def test_sig14(self):
+        @TySig.signature(name=Optional[str],
+                         dob=Union[datetime, Tuple[int, int, int]],
+                         age=float,
+                         education=List[Dict[str, Dict[str, AnyStr]]],
+                         other=Tuple[Any, AnyStr, float, AnyStr])
+        def fn14(*args, **kwargs):
+            print(args)
+            print(kwargs)
+            return kwargs
+
+        res = fn14(
+            None,
+            datetime(2010, 10, 10),
+            11.5,
+            [
+                {
+                    "masters": {
+                        "type": "msci",
+                        "subject": b"maths"
+                    },
+                    "a-level": {}
+                },
+                {}
+            ],
+            other=(1, b"n", 2.2, "j")
+        )
+        self.assertEqual({'name': None,
+                          'dob': datetime(2010, 10, 10, 0, 0),
+                          'age': 11.5,
+                          'education': [{'masters': {'type': 'msci',
+                                                     'subject': b'maths'},
+                                         'a-level': {}}, {}],
+                          'other': (1, b'n', 2.2, 'j')}, res)
+
+    def test_sig14I(self):
+        @TySig.signature(name=Optional[str],
+                         dob=Union[datetime, Tuple[int, int, int]],
+                         age=float,
+                         education=List[Dict[str, Dict[str, AnyStr]]],
+                         other=Tuple[Any, AnyStr, float, AnyStr])
+        def fn14(*args, **kwargs):
+            print(args)
+            print(kwargs)
+
+        err = ""
+        try:
+            fn14(
+                None,
+                datetime(2010, 10, 10),
+                11.5,
+                [
+                    {
+                        "masters": {
+                            "type": "msci",
+                            "subject": b"maths"
+                        },
+                        "a-level": {
+                            "sd": 7.2
+                        }
+                    },
+                    {}
+                ],
+                other=(1, b"n", 2.2, "j")
+            )
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+
+        self.assertEqual("'education' type should be 'typing.List[typing.Dict"
+                         "[str, typing.Dict[str, ~AnyStr]]]' instead found '"
+                         "<class 'list'>'. If you're using GenericAlias, Vari"
+                         "adicGenericAlias, or SpecialForm types then please"
+                         " check the sub argument types are correct", err)
+
+    def test_sig14II(self):
+        @TySig.signature(name=Optional[str],
+                         dob=Union[datetime, Tuple[int, int, int]],
+                         age=float,
+                         education=List[Dict[str, Dict[str, AnyStr]]],
+                         other=Tuple[Any, AnyStr, float, AnyStr])
+        def fn14(*args, **kwargs):
+            print(args)
+            print(kwargs)
+
+        fn14(
+            11.5,
+            [
+                {
+                    "masters": {
+                        "type": "msci",
+                        "subject": b"maths"
+                    },
+                    "a-level": {}
+                },
+                {}
+            ],
+            name=None,
+            other=(1, b"n", 2.2, "j"),
+            dob=datetime(2010, 10, 10)
+        )
+
+    def test_sig14III(self):
+        @TySig.signature(name=Optional[str],
+                         dob=Union[datetime, Tuple[int, int, int]],
+                         age=float,
+                         some=(None, Optional[str]),
+                         ddd=(None, Optional[int]),
+                         education=List[Dict[str, Dict[str, AnyStr]]],
+                         other=Tuple[Any, AnyStr, float, AnyStr])
+        def fn14(*args, **kwargs):
+            print(args)
+            print(kwargs)
+            return kwargs
+
+        res = fn14(
+            11.5,
+            [
+                {
+                    "masters": {
+                        "type": "msci",
+                        "subject": b"maths"
+                    },
+                    "a-level": {}
+                },
+                {}
+            ],
+            name=None,
+            other=(1, b"n", 2.2, "j"),
+            dob=datetime(2010, 10, 10)
+        )
+        self.assertEqual(
+            {'age': 11.5, 'some': None, 'ddd': None, 'education': [
+                {'masters': {'type': 'msci', 'subject': b'maths'},
+                 'a-level': {}}, {}], 'name': None,
+             'other': (1, b'n', 2.2, 'j'),
+             'dob': datetime(2010, 10, 10, 0, 0)},
+            res
+        )

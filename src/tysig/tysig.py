@@ -145,8 +145,9 @@ class TySig(object):
                             defmap[vname] = vdef
 
                 def get_def_type(in_vdeftype) -> tuple:
-                    if TySig.is_typing_type(in_vdeftype) or isinstance(in_vdeftype, type):
-                        in_vdef, in_vtype = None, in_vdeftype
+                    if TySig.is_typing_type(in_vdeftype) or \
+                            isinstance(in_vdeftype, type):
+                        in_vdef, in_vtype = "__NONE__", in_vdeftype
                     elif isinstance(in_vdeftype, tuple):
                         in_vdef, in_vtype = in_vdeftype
                     else:
@@ -162,7 +163,7 @@ class TySig(object):
                         raise TypeError(
                             f"Unexpected variable found: '{kw_name}'")
 
-                    # we don't care about default values here (handled above)
+                    # we don't care about default values here (handled below)
                     _, vtype = get_def_type(vdeftype)
                     if not istype(kw_val, vtype):
                         raise TypeError(ARGS_ERROR.format(kw_name, vtype,
@@ -177,7 +178,7 @@ class TySig(object):
                     idx = -1
                     for idx, arg in enumerate(args):
                         if not istype(arg, vtype):
-                            if vdef is None:
+                            if vdef == "__NONE__":
                                 raise TypeError(
                                     ARGS_ERROR.format(vname, vtype, type(arg)))
                             else:
