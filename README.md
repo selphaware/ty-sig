@@ -27,12 +27,13 @@ help(TySig)
      |  Static methods defined here:
      |  
      |  getattr_name(invar) -> Union[str, NoneType]
-     |      gets name of input object
+     |      gets name of type of invar
+     |      i.e. gets __name__, or _name, or __origin__ of input object
      |      
      |      :param invar: object we are checking name of
      |      :return: name if exists otherwise None
      |  
-     |  is_type(var: object, check_type: Union[type, TypeVar, _GenericAlias, _SpecialForm, _VariadicGenericAlias]) -> bool
+     |  is_type(var: object, check_type) -> bool
      |      recursively checks if var is of type check_type
      |      
      |      :param var: variable to check type
@@ -83,7 +84,7 @@ help(TySig.is_type)
 
     Help on function is_type in module tysig.tysig:
     
-    is_type(var: object, check_type: Union[type, TypeVar, _GenericAlias, _SpecialForm, _VariadicGenericAlias]) -> bool
+    is_type(var: object, check_type) -> bool
         recursively checks if var is of type check_type
         
         :param var: variable to check type
