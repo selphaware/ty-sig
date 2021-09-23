@@ -20,7 +20,8 @@ class TySig(object):
     @staticmethod
     def getattr_name(invar) -> Optional[str]:
         """
-        gets name of input object
+        gets name of type of invar
+        i.e. gets __name__, or _name, or __origin__ of input object
 
         :param invar: object we are checking name of
         :return: name if exists otherwise None
@@ -126,6 +127,7 @@ class TySig(object):
         def inner(fun: Callable):
             @wraps(fun)
             def sub(*_in_args, **in_kwargs):
+                # initialise vars_types (signature params), kwargs, args
                 in_args = _in_args[1:] if classobj else _in_args
                 istype = TySig.is_type
                 vars_types = in_vars_types.copy()
@@ -133,7 +135,7 @@ class TySig(object):
                 args = [x for x in in_args]
                 _NO_DEF = "__NO_DEF__"
 
-                # check default arguments which are of type tuple e.g. (2, int)
+                # check default types which are of type tuple e.g. (2, int)
                 defmap = dict()
                 for vname, vdeftype in vars_types.items():
                     if isinstance(vdeftype, tuple):
@@ -158,7 +160,8 @@ class TySig(object):
                             SIG_TYPE_ERROR.format(type(in_vdeftype)))
                     return in_vdef, in_vtype
 
-                # check kwargs
+                # check types in kwargs
+                # if types are good then pop from kwargs
                 _kwargs = kwargs.copy()
                 for kw_name, kw_val in _kwargs.items():
                     vdeftype = vars_types.get(kw_name)
@@ -175,19 +178,23 @@ class TySig(object):
                     kwargs.pop(kw_name)
                     vars_types.pop(kw_name)
 
-                # check args
+                # assign values from args to kwargs
+                # go through all signature params and compare against args
                 for vname, vdeftype in vars_types.items():
                     vdef, vtype = get_def_type(vdeftype)
                     selected_arg = False
                     idx = -1
+                    # compare signature type against types of args
                     for idx, arg in enumerate(args):
+                        # if type matches, assign value or default
                         if not istype(arg, vtype):
                             if vdef == _NO_DEF:
                                 raise TypeError(
                                     ARGS_ERROR.format(vname, vtype, type(arg)))
-                            else:
+                            else:  # assign default
                                 kwargs[vname] = vdef
                                 break
+                        # type matches, assign value in kwargs
                         else:
                             kwargs[vname] = arg
                             selected_arg = True
@@ -208,7 +215,7 @@ class TySig(object):
                 # if running in a class then pass through self class object
                 if classobj:
                     return fun(_in_args[0], **kwargs)
-                else:  # otherwise: run function normally passing through all set args
+                else:  # ow: run function normally passing through all set args
                     return fun(**kwargs)
 
             return sub
