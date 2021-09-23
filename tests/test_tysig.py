@@ -550,6 +550,7 @@ class TestTySig(unittest.TestCase):
 
         res = fn14(
             11.5,
+            3,
             [
                 {
                     "masters": {
@@ -565,7 +566,7 @@ class TestTySig(unittest.TestCase):
             dob=datetime(2010, 10, 10)
         )
         self.assertEqual(
-            {'age': 11.5, 'some': None, 'ddd': None, 'education': [
+            {'age': 11.5, 'some': None, 'ddd': 3, 'education': [
                 {'masters': {'type': 'msci', 'subject': b'maths'},
                  'a-level': {}}, {}], 'name': None,
              'other': (1, b'n', 2.2, 'j'),
