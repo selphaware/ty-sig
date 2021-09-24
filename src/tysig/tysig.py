@@ -59,8 +59,9 @@ class TySig(object):
             return isinstance(var, check_type)
         except TypeError:
             pass
-        type_has_dict = hasattr(check_type, '__dict__')
-        type_has_dict &= len(check_type.__getattribute__('__dict__')) > 0
+        type_has_dict = hasattr(
+            check_type, '__dict__'
+        ) and len(check_type.__getattribute__('__dict__')) > 0
         if not type_has_dict:
             attr = TySig.getattr_name(check_type)
             if attr == "Any":
