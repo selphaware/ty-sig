@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="ty-sig",
-    version="0.1.4",
+    version="0.1.5",
     author="Usman Ahmad",
     author_email="uahmad3013@outlook.com",
     description="Type safe checker and signature decorator",

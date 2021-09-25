@@ -52,6 +52,8 @@ help(TySig)
      |      of the arguments including typing types. Also applies default values,
      |      and raises exceptions on failing type checks. Uses is_type function.
      |      
+     |      Return types are also checked post execution of function.
+     |      
      |      :param classobj: set to True if within a class (self object)
      |      :param in_vars_types: arguments with their types and/or default values
      |                            e.g. @signature(a=int, b=Union[float, str],
@@ -300,6 +302,8 @@ help(TySig.signature)
         signature decorator applied to functions to hard check the types
         of the arguments including typing types. Also applies default values,
         and raises exceptions on failing type checks. Uses is_type function.
+        
+        Return types are also checked post execution of function.
         
         :param classobj: set to True if within a class (self object)
         :param in_vars_types: arguments with their types and/or default values
@@ -561,4 +565,144 @@ except TypeError as exp:
 ```
 
     'var3' type should be 'typing.Tuple[typing.Any, ~AnyStr, typing.Any]' instead found '<class 'tuple'>'. If you're using GenericAlias, VariadicGenericAlias, or SpecialForm types then please check the sub argument types are correct
+    
+
+
+```python
+# Signtaure Return Type check
+```
+
+
+```python
+@TySig.signature(num=int)
+def fn15(*args, **kwargs) -> Union[
+    Tuple[str, float, List[AnyStr]],
+    Optional[Dict[int, List[Dict[float, Any]]]]
+]:
+    print(args, kwargs)
+    num = kwargs.get("num")
+    if num == 0:
+        return "hello", 5., [b"h", "k", "lll", b"jhjh"]
+    elif num == 1:
+        return "hello", 5., [b"h", 5, "lll", b"jhjh"]
+    elif num == 2:
+        return ["hello", 5., [b"h", "5", "lll", b"jhjh"]]
+    elif num == 3:
+        return [b"hello", 5., [b"h", "5", "lll", b"jhjh"]]
+    elif num == 4:
+        return {
+            1: [
+                {
+                    2.: "Jhjdshf"
+                }
+            ]
+        }
+    elif num == 5:
+        return {
+            1.: [
+                {
+                    2.: "Jhjdshf"
+                }
+            ]
+        }
+    elif num == 6:
+        return {
+            1: [
+                {
+                    2: "Jhjdshf"
+                }
+            ]
+        }
+    else:
+        return None
+```
+
+
+```python
+ret = fn15(0)
+print(ret)
+```
+
+    () {'num': 0}
+    ('hello', 5.0, [b'h', 'k', 'lll', b'jhjh'])
+    
+
+
+```python
+try:
+    _ = fn15(1)
+except TypeError as exp:
+    print(exp)
+```
+
+    () {'num': 1}
+    Return object type does not match signature return type typing.Union[typing.Tuple[str, float, typing.List[~AnyStr]], typing.Dict[int, typing.List[typing.Dict[float, typing.Any]]], NoneType]
+    
+
+
+```python
+try:
+    _ = fn15(2)
+except TypeError as exp:
+    print(exp)
+```
+
+    () {'num': 2}
+    Return object type does not match signature return type typing.Union[typing.Tuple[str, float, typing.List[~AnyStr]], typing.Dict[int, typing.List[typing.Dict[float, typing.Any]]], NoneType]
+    
+
+
+```python
+try:
+    _ = fn15(3)
+except TypeError as exp:
+    print(exp)
+```
+
+    () {'num': 3}
+    Return object type does not match signature return type typing.Union[typing.Tuple[str, float, typing.List[~AnyStr]], typing.Dict[int, typing.List[typing.Dict[float, typing.Any]]], NoneType]
+    
+
+
+```python
+ret = fn15(4)
+print(ret)
+```
+
+    () {'num': 4}
+    {1: [{2.0: 'Jhjdshf'}]}
+    
+
+
+```python
+try:
+    _ = fn15(5)
+except TypeError as exp:
+    print(exp)
+```
+
+    () {'num': 5}
+    Return object type does not match signature return type typing.Union[typing.Tuple[str, float, typing.List[~AnyStr]], typing.Dict[int, typing.List[typing.Dict[float, typing.Any]]], NoneType]
+    
+
+
+```python
+try:
+    _ = fn15(6)
+except TypeError as exp:
+    print(exp)
+```
+
+    () {'num': 6}
+    Return object type does not match signature return type typing.Union[typing.Tuple[str, float, typing.List[~AnyStr]], typing.Dict[int, typing.List[typing.Dict[float, typing.Any]]], NoneType]
+    
+
+
+```python
+ret = fn15(-1)
+print(ret)
+```
+
+    () {'num': -1}
+    None
     
