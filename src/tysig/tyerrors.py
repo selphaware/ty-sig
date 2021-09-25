@@ -16,3 +16,5 @@ ARGS_ERROR = "'{}' type should be '{}' instead found '{}'. If "\
              " types then please check the sub argument types are correct"
 
 UNEXP_ERROR = "Found unexpected extra arguments: {}"
+
+RET_TYPE_ERROR = "Return object type does not match signature return type {}"

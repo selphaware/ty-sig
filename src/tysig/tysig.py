@@ -5,14 +5,14 @@
 
     Type Safe checker and signature decorator for type checking and
     typing type checking e.g. Union, Optional, Literal, Any, AnyStr,
-    Tuple, Dict, List, TypeVar
+    Tuple, Dict, List, TypeVar. Also checking return types.
 """
 
-from typing import Union, Optional, Callable
+from typing import Union, Optional, Callable, get_type_hints
 import typing
 from functools import wraps
 from tysig.tyerrors import DEFAULT_ERROR, SIG_TYPE_ERROR, ARGS_ERROR, \
-    UNEXP_ERROR
+    UNEXP_ERROR, RET_TYPE_ERROR
 
 
 class TySig(object):
@@ -120,6 +120,8 @@ class TySig(object):
         of the arguments including typing types. Also applies default values,
         and raises exceptions on failing type checks. Uses is_type function.
 
+        Return types are also checked post execution of function.
+
         :param classobj: set to True if within a class (self object)
         :param in_vars_types: arguments with their types and/or default values
                               e.g. @signature(a=int, b=Union[float, str],
@@ -202,10 +204,11 @@ class TySig(object):
                             kwargs[vname] = arg
                             selected_arg = True
                             break
+                    # selected argument from args, so we can pop
                     if selected_arg and (idx >= 0):
                         del args[idx]
 
-                # finalize kwargs, apply defaults, and execute function
+                # finalize kwargs, apply defaults
                 kwargs.update(in_kwargs)
                 for vname, vdef in defmap.items():
                     if kwargs.get(vname) is None:
@@ -215,11 +218,23 @@ class TySig(object):
                 if len(args) > 0:
                     raise TypeError(UNEXP_ERROR.format(args))
 
+                # execute function
                 # if running in a class then pass through self class object
                 if classobj:
-                    return fun(_in_args[0], **kwargs)
+                    return_obj = fun(_in_args[0], **kwargs)
                 else:  # ow: run function normally passing through all set args
-                    return fun(**kwargs)
+                    return_obj = fun(**kwargs)
+
+                # check return type. Continue if there is no return type,
+                # but check the return type if exists.
+                act_ret_type_obj = get_type_hints(fun)
+                if isinstance(act_ret_type_obj, dict):
+                    act_ret_type = act_ret_type_obj.get('return')
+                    if act_ret_type is not None:
+                        if not istype(return_obj, act_ret_type):
+                            raise TypeError(RET_TYPE_ERROR.format(act_ret_type))
+
+                return return_obj
 
             return sub
 

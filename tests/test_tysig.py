@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 @TySig.signature(a=(8, int), b=float, c=str, d=Tuple[str, List[int]])
-def fn(*args, **kwargs):
+def fn(*args, **kwargs) -> Tuple[tuple, dict]:
     print(args)
     print(kwargs)
     return args, kwargs
@@ -64,10 +64,47 @@ def fn5(*args, **kwargs):
     return args, kwargs
 
 
-def print_check(var, ntype, check):
-    print("\n", "-" * 30)
-    print(f"CHECK: {var} is {ntype} ? --> ", check)
-    print("-" * 30)
+@TySig.signature(num=int)
+def fn15(*args, **kwargs) -> Union[
+    Tuple[str, float, List[AnyStr]],
+    Optional[Dict[int, List[Dict[float, Any]]]]
+]:
+    print(args, kwargs)
+    num = kwargs.get("num")
+    if num == 0:
+        return "hello", 5., [b"h", "k", "lll", b"jhjh"]
+    elif num == 1:
+        return "hello", 5., [b"h", 5, "lll", b"jhjh"]
+    elif num == 2:
+        return ["hello", 5., [b"h", "5", "lll", b"jhjh"]]
+    elif num == 3:
+        return [b"hello", 5., [b"h", "5", "lll", b"jhjh"]]
+    elif num == 4:
+        return {
+            1: [
+                {
+                    2.: "Jhjdshf"
+                }
+            ]
+        }
+    elif num == 5:
+        return {
+            1.: [
+                {
+                    2.: "Jhjdshf"
+                }
+            ]
+        }
+    elif num == 6:
+        return {
+            1: [
+                {
+                    2: "Jhjdshf"
+                }
+            ]
+        }
+    else:
+        return None
 
 
 @TySig.signature(
@@ -79,6 +116,12 @@ def fn6(*args, **kwargs):
     print(args)
     print(kwargs)
     return args, kwargs
+
+
+def print_check(var, ntype, check):
+    print("\n", "-" * 30)
+    print(f"CHECK: {var} is {ntype} ? --> ", check)
+    print("-" * 30)
 
 
 class TestTySig(unittest.TestCase):
@@ -573,3 +616,84 @@ class TestTySig(unittest.TestCase):
              'dob': datetime(2010, 10, 10, 0, 0)},
             res
         )
+
+    # test return types
+    def test_sig151(self):
+        ret = fn15(0)
+        print(ret)
+        self.assertEqual(('hello', 5.0, [b'h', 'k', 'lll', b'jhjh']), ret)
+
+    def test_sig152(self):
+        err = ""
+        try:
+            _ = fn15(1)
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+        self.assertEqual("Return object type does not match "
+                         "signature return type typing.Union[typing.Tuple"
+                         "[str, float, typing.List[~AnyStr]], typing.Dict["
+                         "int, typing.List[typing.Dict[float, typing.An"
+                         "y]]], NoneType]", err)
+
+    def test_sig153(self):
+        err = ""
+        try:
+            _ = fn15(2)
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+        self.assertEqual("Return object type does not match "
+                         "signature return type typing.Union[typing.Tuple"
+                         "[str, float, typing.List[~AnyStr]], typing.Dict["
+                         "int, typing.List[typing.Dict[float, typing.An"
+                         "y]]], NoneType]", err)
+
+    def test_sig154(self):
+        err = ""
+        try:
+            _ = fn15(3)
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+        self.assertEqual("Return object type does not match "
+                         "signature return type typing.Union[typing.Tuple"
+                         "[str, float, typing.List[~AnyStr]], typing.Dict["
+                         "int, typing.List[typing.Dict[float, typing.An"
+                         "y]]], NoneType]", err)
+
+    def test_sig155(self):
+        ret = fn15(4)
+        print(ret)
+        self.assertEqual({1: [{2.0: 'Jhjdshf'}]}, ret)
+
+    def test_sig156(self):
+        err = ""
+        try:
+            _ = fn15(5)
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+        self.assertEqual("Return object type does not match "
+                         "signature return type typing.Union[typing.Tuple"
+                         "[str, float, typing.List[~AnyStr]], typing.Dict["
+                         "int, typing.List[typing.Dict[float, typing.An"
+                         "y]]], NoneType]", err)
+
+    def test_sig157(self):
+        err = ""
+        try:
+            _ = fn15(6)
+        except TypeError as exp:
+            print(exp)
+            err = str(exp)
+        self.assertEqual("Return object type does not match "
+                         "signature return type typing.Union[typing.Tuple"
+                         "[str, float, typing.List[~AnyStr]], typing.Dict["
+                         "int, typing.List[typing.Dict[float, typing.An"
+                         "y]]], NoneType]", err)
+
+    def test_sig158(self):
+        ret = fn15(-1)
+        print(ret)
+        self.assertEqual(None, ret)
