@@ -697,3 +697,14 @@ class TestTySig(unittest.TestCase):
         ret = fn15(-1)
         print(ret)
         self.assertEqual(None, ret)
+
+    def test_def1(self):
+        @TySig.signature(j=int, ver=("v3", str))
+        def fnd(j: int, ver: str = "v3"):
+            print("Starting")
+            print(j)
+            print(ver)
+            print("Ending/n")
+
+        fnd(1)
+        fnd(1, ver="v4")
